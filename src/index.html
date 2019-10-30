@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Chat app</title>
+</head>
+<script src=" /socket.io/socket.io.js"></script>
+
+<script>
+    let socket = io();
+    const setUsername = () => {
+        socket.emit('setUsername', document.getElementById('name').value);
+    }
+    let user;
+    socket.on('userExists', (data) => {
+        document.getElementById('error-container').innerHTML = data;
+    })
+    socket.on('userSet', (data) => {
+        console.log("TCL: data", data);
+        user = data.username;
+        document.body.innerHTML = '<input type = "text" id = "message">\
+         <button type = "button" name = "button" onclick = "sendMessage()">Send</button>\
+         <div id = "message-container"></div>';
+    });
+
+    const sendMessage = () => {
+        let msg = document.getElementById('message').value;
+        if (msg) {
+            socket.emit('msg', { message: msg, user: user });
+            document.getElementById('message').innerHTML = '';
+        }
+    }
+
+    socket.on('newmsg', (data) => {
+        if (user) {
+            document.getElementById('message-container').innerHTML += '<div><b>' +
+                data.user + '</b>: ' + data.message + '</div>'
+        }
+    });
+</script>
+
+<body>
+    <div id="error-container"></div>
+    <input id="name" type="text" name="name" value="" placeholder="Enter your name!">
+    <button type="button" name="button" onclick="setUsername()">Let me Chat!</button>
+</body>
+
+</html>
